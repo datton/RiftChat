@@ -2,12 +2,73 @@
     <div class="flex flex-col flex-1 overflow-hidden min-w-full sm:min-w-[500px] dark:bg-zinc-950">
         <div class="overflow-y-auto p-2 space-y-2">
 
+            <!-- Rift core Citadels (Rift-branded quick-add) -->
+            <div v-if="!isEditingInterface && config != null && config.show_suggested_community_interfaces" class="bg-white rounded shadow divide-y divide-gray-200 dark:bg-zinc-900" style="border:1px solid rgba(0,229,255,.15); box-shadow:0 0 30px rgba(0,229,255,.05)">
+                <div class="flex p-2">
+                    <div class="my-auto mr-auto">
+                        <div class="font-bold dark:text-white" style="font-family:'Space Grotesk',sans-serif">Rift Citadels</div>
+                        <div class="text-sm dark:text-gray-100" style="font-family:'IBM Plex Mono',monospace; font-size:.75rem; color:#6B7478">Core Rift entry hubs on the public internet. Reticulum opens all three in parallel — whichever responds first gets you on the mesh; the others provide redundancy. No RNode required.</div>
+                    </div>
+                </div>
+                <div class="divide-y divide-gray-200 dark:text-white">
+
+                    <div class="flex px-2 py-1">
+                        <div class="my-auto mr-auto">
+                            <div>Rift Citadel A</div>
+                            <div class="text-xs" style="font-family:'IBM Plex Mono',monospace">a.citadel.rift.pw:4242</div>
+                        </div>
+                        <div class="ml-2 my-auto">
+                            <button
+                                @click="newInterfaceName='Rift Citadel A';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='a.citadel.rift.pw';newInterfaceTargetPort='4242'"
+                                type="button"
+                                class="inline-flex items-center gap-x-1 rounded-md px-2 py-1 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                                style="background:rgba(0,229,255,.85); color:#050607">
+                                <span>Use Interface</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex px-2 py-1">
+                        <div class="my-auto mr-auto">
+                            <div>Rift Citadel B</div>
+                            <div class="text-xs" style="font-family:'IBM Plex Mono',monospace">b.citadel.rift.pw:4242</div>
+                        </div>
+                        <div class="ml-2 my-auto">
+                            <button
+                                @click="newInterfaceName='Rift Citadel B';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='b.citadel.rift.pw';newInterfaceTargetPort='4242'"
+                                type="button"
+                                class="inline-flex items-center gap-x-1 rounded-md px-2 py-1 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                                style="background:rgba(0,229,255,.85); color:#050607">
+                                <span>Use Interface</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex px-2 py-1">
+                        <div class="my-auto mr-auto">
+                            <div>Rift Connect Hub</div>
+                            <div class="text-xs" style="font-family:'IBM Plex Mono',monospace">connect.rift.pw:4242</div>
+                        </div>
+                        <div class="ml-2 my-auto">
+                            <button
+                                @click="newInterfaceName='Rift Connect Hub';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='connect.rift.pw';newInterfaceTargetPort='4242'"
+                                type="button"
+                                class="inline-flex items-center gap-x-1 rounded-md px-2 py-1 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                                style="background:rgba(0,229,255,.85); color:#050607">
+                                <span>Use Interface</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
             <!-- community interfaces -->
             <div v-if="!isEditingInterface && config != null && config.show_suggested_community_interfaces" class="bg-white rounded shadow divide-y divide-gray-200 dark:bg-zinc-900">
                 <div class="flex p-2">
                     <div class="my-auto mr-auto">
                         <div class="font-bold dark:text-white">Community Interfaces</div>
-                        <div class="text-sm dark:text-gray-100">These TCP interfaces serve as a quick way to test Reticulum. We suggest running your own as these may not always be available.</div>
+                        <div class="text-sm dark:text-gray-100">Public Reticulum hubs run by the wider community — useful for reaching Sideband / NomadNet / MeshChat users outside the Rift mesh. Independent of the Rift Citadels above.</div>
                     </div>
                     <div class="my-auto ml-2">
                         <button @click="updateConfig({'show_suggested_community_interfaces': false})" type="button" class="text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full dark:bg-zinc-600 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outline-zinc-500">
@@ -42,6 +103,111 @@
                         <div class="ml-2 my-auto">
                             <button
                                 @click="newInterfaceName='RNS Testnet BetweenTheBorders';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='reticulum.betweentheborders.com';newInterfaceTargetPort='4242'"
+                                type="button"
+                                class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                <span>Use Interface</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex px-2 py-1">
+                        <div class="my-auto mr-auto">
+                            <div>Sydney RNS</div>
+                            <div class="text-xs">sydney.reticulum.au:4242</div>
+                        </div>
+                        <div class="ml-2 my-auto">
+                            <button
+                                @click="newInterfaceName='Sydney RNS';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='sydney.reticulum.au';newInterfaceTargetPort='4242'"
+                                type="button"
+                                class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                <span>Use Interface</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex px-2 py-1">
+                        <div class="my-auto mr-auto">
+                            <div>dismail.de</div>
+                            <div class="text-xs">rns.dismail.de:7822</div>
+                        </div>
+                        <div class="ml-2 my-auto">
+                            <button
+                                @click="newInterfaceName='dismail.de';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='rns.dismail.de';newInterfaceTargetPort='7822'"
+                                type="button"
+                                class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                <span>Use Interface</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex px-2 py-1">
+                        <div class="my-auto mr-auto">
+                            <div>interloper</div>
+                            <div class="text-xs">intr.cx:4242</div>
+                        </div>
+                        <div class="ml-2 my-auto">
+                            <button
+                                @click="newInterfaceName='interloper';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='intr.cx';newInterfaceTargetPort='4242'"
+                                type="button"
+                                class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                <span>Use Interface</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex px-2 py-1">
+                        <div class="my-auto mr-auto">
+                            <div>noDNS1 <span class="text-xs opacity-60">(IP-only, useful when DNS is blocked)</span></div>
+                            <div class="text-xs">202.61.243.41:4965</div>
+                        </div>
+                        <div class="ml-2 my-auto">
+                            <button
+                                @click="newInterfaceName='noDNS1';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='202.61.243.41';newInterfaceTargetPort='4965'"
+                                type="button"
+                                class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                <span>Use Interface</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex px-2 py-1">
+                        <div class="my-auto mr-auto">
+                            <div>The Outpost</div>
+                            <div class="text-xs">theoutpost.life:4242</div>
+                        </div>
+                        <div class="ml-2 my-auto">
+                            <button
+                                @click="newInterfaceName='The Outpost';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='theoutpost.life';newInterfaceTargetPort='4242'"
+                                type="button"
+                                class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                <span>Use Interface</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex px-2 py-1">
+                        <div class="my-auto mr-auto">
+                            <div>Beleth RNS Hub</div>
+                            <div class="text-xs">rns.beleth.net:4242</div>
+                        </div>
+                        <div class="ml-2 my-auto">
+                            <button
+                                @click="newInterfaceName='Beleth RNS Hub';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='rns.beleth.net';newInterfaceTargetPort='4242'"
+                                type="button"
+                                class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
+                                <span>Use Interface</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex px-2 py-1">
+                        <div class="my-auto mr-auto">
+                            <div>Rocket Tech Hub <span class="text-xs opacity-60">(port 443 — useful where 4242/4965 are blocked)</span></div>
+                            <div class="text-xs">reticulum.rocket-tech.net:443</div>
+                        </div>
+                        <div class="ml-2 my-auto">
+                            <button
+                                @click="newInterfaceName='Rocket Tech Hub';newInterfaceType='TCPClientInterface';newInterfaceTargetHost='reticulum.rocket-tech.net';newInterfaceTargetPort='443'"
                                 type="button"
                                 class="inline-flex items-center gap-x-1 rounded-md bg-gray-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500">
                                 <span>Use Interface</span>

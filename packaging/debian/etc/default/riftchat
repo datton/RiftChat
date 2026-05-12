@@ -1,0 +1,21 @@
+# /etc/default/riftchat — operator-controlled RiftChat behavior.
+# Edit this file and any change takes effect on next service restart
+# or next cron tick (whichever applies).
+
+# ─── Unattended upgrades ──────────────────────────────────────────────
+# When set to "true", the weekly cron at /etc/cron.weekly/riftchat-auto-update
+# will run `apt-get update && apt-get install -y --only-upgrade riftchat`
+# and restart the service if a new version was installed.
+#
+# Default: false. Operators must opt-in. This avoids surprising you with
+# an automatic restart at an inconvenient time.
+RIFTCHAT_AUTO_UPDATE=false
+
+# ─── Web UI bind ──────────────────────────────────────────────────────
+# Override the host/port the systemd unit's meshchat.py binds to.
+# These are NOT yet consumed by the unit file as of v0.1.0 — they're
+# placeholders. To actually change the bind, edit the ExecStart line in
+# /lib/systemd/system/riftchat.service (or use a systemd drop-in at
+# /etc/systemd/system/riftchat.service.d/override.conf).
+#RIFTCHAT_HOST=0.0.0.0
+#RIFTCHAT_PORT=8000

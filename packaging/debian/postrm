@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# postrm — clean up after RiftChat removal.
+#
+# Called as:
+#   postrm remove            → standard uninstall (keep config + state)
+#   postrm purge             → full removal including config + state
+#   postrm upgrade <ver>     → after files swapped, before postinst configure
+set -e
+
+INSTALL_DIR="/opt/riftchat"
+VENV_DIR="${INSTALL_DIR}/.venv"
+RIFTCHAT_USER="riftchat"
+RIFTCHAT_HOME="/var/lib/riftchat"
+
+case "$1" in
+    remove|upgrade|deconfigure)
+        # Disable systemd unit aliases / wants symlinks
+        if [ -x /usr/bin/deb-systemd-helper ] && [ "$1" = "remove" ]; then
+            deb-systemd-helper mask 'riftchat.service' >/dev/null || true
+        fi
+        if [ -d /run/systemd/system ]; then
+            systemctl --system daemon-reload >/dev/null || true
+        fi
+        ;;
+
+    purge)
+        echo "[riftchat] Purging RiftChat state and venv..."
+
+        # Remove venv (created by postinst, not tracked by dpkg)
+        rm -rf "${VENV_DIR}"
+
+        # Remove all state — identity, message DB, Reticulum config
+        rm -rf "${RIFTCHAT_HOME}"
+
+        # Remove service user
+        if getent passwd "${RIFTCHAT_USER}" >/dev/null; then
+            deluser --system "${RIFTCHAT_USER}" 2>/dev/null || true
+        fi
+
+        # Fully purge systemd unit state
+        if [ -x /usr/bin/deb-systemd-helper ]; then
+            deb-systemd-helper purge 'riftchat.service' >/dev/null || true
+            deb-systemd-helper unmask 'riftchat.service' >/dev/null || true
+        fi
+        if [ -d /run/systemd/system ]; then
+            systemctl --system daemon-reload >/dev/null || true
+        fi
+        ;;
+
+    failed-upgrade|abort-install|abort-upgrade|disappear)
+        ;;
+
+    *)
+        echo "postrm called with unknown argument: $1" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

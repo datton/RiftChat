@@ -1,0 +1,22 @@
+Package: riftchat
+Version: __VERSION__
+Section: net
+Priority: optional
+Architecture: all
+Depends: python3 (>= 3.11), python3-venv, python3-pip, python3-dev, libffi-dev, libssl-dev, libusb-1.0-0, build-essential, curl
+Recommends: i2pd
+Maintainer: Rift Maintainers <ops@rift.pw>
+Homepage: https://rift.pw
+Description: RiftChat - Reticulum mesh messenger
+ RiftChat is a Reticulum-native messenger that works without the internet.
+ Messages travel over LoRa radio, BLE, WiFi-Direct, Ethernet, or the public
+ internet - whichever Reticulum transports are available.
+ .
+ Wire-compatible with Sideband, NomadNet, and Reticulum MeshChat over LXMF.
+ Memory for the Mesh.
+ .
+ This package is a Rift-branded fork of Reticulum MeshChat by Liam Cottle (MIT).
+ The fork carries upstream's MIT license intact; Rift additions are also MIT.
+ .
+ Installs on both amd64 and arm64 (Architecture: all) - Python wheels for
+ native dependencies are resolved per-architecture at install time via pip.

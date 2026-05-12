@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# prerm — stop the service before file removal/upgrade.
+#
+# Called as:
+#   prerm remove              → uninstall
+#   prerm upgrade <new-version> → about to upgrade
+#   prerm deconfigure ...     → less common
+set -e
+
+case "$1" in
+    remove|upgrade|deconfigure)
+        if [ -d /run/systemd/system ]; then
+            if [ -x /usr/bin/deb-systemd-invoke ]; then
+                deb-systemd-invoke stop 'riftchat.service' >/dev/null || true
+            else
+                systemctl stop 'riftchat.service' >/dev/null || true
+            fi
+        fi
+        ;;
+
+    failed-upgrade)
+        ;;
+
+    *)
+        echo "prerm called with unknown argument: $1" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# riftchat - convenience wrapper that runs the RiftChat Python entry point
+# inside the system venv created by the .deb postinst script.
+#
+# Usage:
+#   riftchat [meshchat.py args...]
+#   riftchat --host 0.0.0.0 --port 8000 --headless
+#
+# For the systemd-managed daemon, use `systemctl {start,stop,status} riftchat`
+# instead of running this script directly.
+
+INSTALL_DIR="/opt/riftchat"
+VENV_PYTHON="${INSTALL_DIR}/.venv/bin/python"
+
+if [ ! -x "${VENV_PYTHON}" ]; then
+    echo "Error: RiftChat venv not found at ${INSTALL_DIR}/.venv" >&2
+    echo "Try reinstalling: sudo apt install --reinstall riftchat" >&2
+    exit 1
+fi
+
+exec "${VENV_PYTHON}" "${INSTALL_DIR}/meshchat.py" "$@"

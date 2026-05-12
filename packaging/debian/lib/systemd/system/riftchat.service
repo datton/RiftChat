@@ -1,0 +1,47 @@
+[Unit]
+Description=RiftChat - Reticulum mesh messenger
+Documentation=https://rift.pw  https://github.com/datton/TheRift/tree/main/apps/riftchat
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=riftchat
+Group=riftchat
+WorkingDirectory=/opt/riftchat
+Environment="PATH=/opt/riftchat/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/opt/riftchat/.venv/bin/python /opt/riftchat/meshchat.py \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --headless \
+    --identity-file /var/lib/riftchat/identity \
+    --storage-dir /var/lib/riftchat/storage \
+    --reticulum-config-dir /var/lib/riftchat/reticulum
+
+# Readiness probe — systemd considers the unit "active" only once the UI
+# answers on :8000. Retries for up to 30s with 1s intervals. Failure here
+# triggers the Restart=on-failure policy below.
+ExecStartPost=/bin/bash -c 'for i in $(seq 1 30); do curl -fsS -o /dev/null --max-time 2 http://127.0.0.1:8000/ && exit 0; sleep 1; done; echo "[riftchat] UI did not become reachable on :8000 within 30s" >&2; exit 1'
+TimeoutStartSec=60
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+
+# Security hardening (loosened where it would block Reticulum's transport detection)
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/riftchat
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+# Allow access to USB serial devices (RNode / LoRa)
+SupplementaryGroups=dialout
+DeviceAllow=char-ttyUSB rw
+DeviceAllow=char-ttyACM rw
+
+[Install]
+WantedBy=multi-user.target

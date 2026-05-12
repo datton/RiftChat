@@ -1,0 +1,3 @@
+/lib/systemd/system/riftchat.service
+/etc/default/riftchat
+/etc/cron.weekly/riftchat-auto-update

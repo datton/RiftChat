@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# /etc/cron.weekly/riftchat-auto-update
+#
+# Weekly opt-in auto-upgrade for RiftChat. Triggered by anacron / cron on
+# all standard Debian/Ubuntu systems (anacron handles laptops that aren't
+# always on at 06:25).
+#
+# To enable:
+#   sudo sed -i 's/^RIFTCHAT_AUTO_UPDATE=false/RIFTCHAT_AUTO_UPDATE=true/' /etc/default/riftchat
+#
+# To disable:
+#   reverse the sed above, or remove this file.
+
+set -e
+
+# Load operator config
+DEFAULT_FILE="/etc/default/riftchat"
+[ -r "${DEFAULT_FILE}" ] || exit 0
+# shellcheck disable=SC1090
+. "${DEFAULT_FILE}"
+
+# Bail out unless explicitly opted in
+case "${RIFTCHAT_AUTO_UPDATE:-false}" in
+    true|yes|1|on) ;;
+    *) exit 0 ;;
+esac
+
+# Some scheduling jitter so a fleet of RiftChat hosts don't all hit
+# apt.rift.pw at the same minute. Sleep 0–300 seconds.
+sleep $(( RANDOM % 300 ))
+
+# Capture the version before/after so we know whether to restart.
+BEFORE=$(dpkg-query -W -f='${Version}' riftchat 2>/dev/null || echo unknown)
+
+# Update the index and upgrade only riftchat (don't touch other packages).
+DEBIAN_FRONTEND=noninteractive apt-get update -qq -o Dir::Etc::sourcelist="sources.list.d/rift.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0" 2>&1 || {
+    # Fall back to a full apt-get update if the per-source-list call isn't supported
+    DEBIAN_FRONTEND=noninteractive apt-get update -qq
+}
+DEBIAN_FRONTEND=noninteractive apt-get install -y --only-upgrade riftchat 2>&1 | logger -t riftchat-auto-update
+
+AFTER=$(dpkg-query -W -f='${Version}' riftchat 2>/dev/null || echo unknown)
+
+if [ "${BEFORE}" != "${AFTER}" ]; then
+    logger -t riftchat-auto-update "Upgraded riftchat ${BEFORE} → ${AFTER}; restart already handled by postinst"
+else
+    logger -t riftchat-auto-update "riftchat is already at version ${AFTER}; no action"
+fi
+
+exit 0
