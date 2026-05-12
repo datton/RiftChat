@@ -1,18 +1,18 @@
 from cx_Freeze import setup, Executable
 
 setup(
-    name='ReticulumMeshChat',
-    version='1.0.0',
-    description='A simple mesh network communications app powered by the Reticulum Network Stack',
+    name='RiftChat',
+    version='0.1.0',
+    description='RiftChat - Reticulum mesh messenger. Memory for the Mesh. (Rift-branded fork of Reticulum MeshChat by Liam Cottle, MIT.)',
     executables=[
         Executable(
-            script='meshchat.py', # this script to run
+            script='meshchat.py', # entry point (filename retained from upstream; class is RiftChat-branded)
             base=None, # we are running a console application, not a gui
-            target_name='ReticulumMeshChat', # creates ReticulumMeshChat.exe
-            shortcut_name='ReticulumMeshChat', # name shown in shortcut
+            target_name='RiftChat', # creates RiftChat.exe on Windows, RiftChat on Linux
+            shortcut_name='RiftChat', # name shown in shortcut
             shortcut_dir='ProgramMenuFolder', # put the shortcut in windows start menu
             icon='logo/icon.ico', # set the icon for the exe
-            copyright='Copyright (c) 2024 Liam Cottle',
+            copyright='Copyright (c) 2024 Liam Cottle (upstream MeshChat, MIT) / (c) 2026 Rift Contributors (additions, MIT)',
         ),
     ],
     options={

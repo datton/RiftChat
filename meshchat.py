@@ -765,11 +765,11 @@ class ReticulumMeshChat:
 
             if allow_overwriting_interface:
                 return web.json_response({
-                    "message": "Interface has been saved. Please restart MeshChat for these changes to take effect.",
+                    "message": "Interface has been saved. Please restart RiftChat for these changes to take effect.",
                 })
             else:
                 return web.json_response({
-                    "message": "Interface has been added. Please restart MeshChat for these changes to take effect.",
+                    "message": "Interface has been added. Please restart RiftChat for these changes to take effect.",
                 })
         
         # export interfaces
@@ -985,7 +985,7 @@ class ReticulumMeshChat:
             self.reticulum.config.write()
 
             return web.json_response({
-                "message": "Transport has been enabled. MeshChat must be restarted for this change to take effect.",
+                "message": "Transport has been enabled. RiftChat must be restarted for this change to take effect.",
             })
 
         # disable transport mode
@@ -997,7 +997,7 @@ class ReticulumMeshChat:
             self.reticulum.config.write()
 
             return web.json_response({
-                "message": "Transport has been disabled. MeshChat must be restarted for this change to take effect.",
+                "message": "Transport has been disabled. RiftChat must be restarted for this change to take effect.",
             })
 
         # get calls

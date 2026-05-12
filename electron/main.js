@@ -89,23 +89,23 @@ function log(message) {
 
 function getDefaultStorageDir() {
 
-    // if we are running a windows portable exe, we want to use .reticulum-meshchat in the portable exe dir
-    // e.g if we launch "E:\Some\Path\MeshChat.exe" we want to use "E:\Some\Path\.reticulum-meshchat"
+    // if we are running a windows portable exe, we want to use .riftchat in the portable exe dir
+    // e.g if we launch "E:\Some\Path\RiftChat.exe" we want to use "E:\Some\Path\.riftchat"
     const portableExecutableDir = process.env.PORTABLE_EXECUTABLE_DIR;
     if(process.platform === "win32" && portableExecutableDir != null){
-        return path.join(portableExecutableDir, '.reticulum-meshchat');
+        return path.join(portableExecutableDir, '.riftchat');
     }
 
     // otherwise, we will fall back to putting the storage dir in the users home directory
-    // e.g: ~/.reticulum-meshchat
-    return path.join(app.getPath('home'), '.reticulum-meshchat');
+    // e.g: ~/.riftchat
+    return path.join(app.getPath('home'), '.riftchat');
 
 }
 
 function getDefaultReticulumConfigDir() {
 
     // if we are running a windows portable exe, we want to use .reticulum in the portable exe dir
-    // e.g if we launch "E:\Some\Path\MeshChat.exe" we want to use "E:\Some\Path\.reticulum"
+    // e.g if we launch "E:\Some\Path\RiftChat.exe" we want to use "E:\Some\Path\.reticulum"
     const portableExecutableDir = process.env.PORTABLE_EXECUTABLE_DIR;
     if(process.platform === "win32" && portableExecutableDir != null){
         return path.join(portableExecutableDir, '.reticulum');
@@ -178,8 +178,8 @@ app.whenReady().then(async () => {
 
     }
 
-    // find path to python/cxfreeze reticulum meshchat executable
-    const exeName = process.platform === "win32" ? "ReticulumMeshChat.exe" : "ReticulumMeshChat";
+    // find path to python/cxfreeze RiftChat executable
+    const exeName = process.platform === "win32" ? "RiftChat.exe" : "RiftChat";
     var exe = path.join(__dirname, `build/exe/${exeName}`);
 
     // if dist exe doesn't exist, check local build
@@ -191,7 +191,7 @@ app.whenReady().then(async () => {
 
         // arguments we always want to pass in
         const requiredArguments = [
-            '--headless', // reticulum meshchat usually launches default web browser, we don't want this when using electron
+            '--headless', // RiftChat usually launches default web browser, we don't want this when using electron
             '--port', '9337', // FIXME: let system pick a random unused port?
             // '--test-exception-message', 'Test Exception Message', // uncomment to test the crash dialog
         ];
@@ -271,7 +271,7 @@ app.whenReady().then(async () => {
             const stderr = stderrLines.join("");
             await dialog.showMessageBox(mainWindow, {
                 message: [
-                    "MeshChat Crashed!",
+                    "RiftChat Crashed!",
                     "",
                     `Exit Code: ${code}`,
                     "",

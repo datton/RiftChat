@@ -152,6 +152,6 @@ jobs:
             ghcr.io/liamcottle/reticulum-meshchat:latest
             ghcr.io/liamcottle/reticulum-meshchat:${{ github.ref_name }}
           labels: |
-            org.opencontainers.image.title=Reticulum MeshChat
-            org.opencontainers.image.description=Docker image for Reticulum MeshChat
+            org.opencontainers.image.title=RiftChat
+            org.opencontainers.image.description=Docker image for RiftChat (Reticulum mesh messenger, Rift-branded fork of MeshChat)
             org.opencontainers.image.url=https://github.com/liamcottle/reticulum-meshchat/pkgs/container/reticulum-meshchat/
