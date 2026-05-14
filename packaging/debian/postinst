@@ -296,25 +296,19 @@ EOF
         if [ -d /run/systemd/system ]; then
             systemctl --system daemon-reload >/dev/null || true
 
-            if [ -z "${2:-}" ]; then
-                # Fresh install (no previous version) → enable + start
-                echo "[riftchat] Fresh install — enabling + starting service..."
-                if [ -x /usr/bin/deb-systemd-helper ]; then
-                    deb-systemd-helper enable 'riftchat.service' >/dev/null || true
-                fi
-                if [ -x /usr/bin/deb-systemd-invoke ]; then
-                    deb-systemd-invoke start 'riftchat.service' >/dev/null || true
-                else
-                    systemctl start 'riftchat.service' >/dev/null || true
-                fi
+            # Always ensure enabled. try-restart is a no-op if the service
+            # is stopped (was the case when upgrading from a 0.1.x that
+            # crashed and never recovered), so explicitly: if active →
+            # restart to pick up new code; if inactive → start.
+            if [ -x /usr/bin/deb-systemd-helper ]; then
+                deb-systemd-helper enable 'riftchat.service' >/dev/null || true
+            fi
+            if systemctl is-active --quiet 'riftchat.service' 2>/dev/null; then
+                echo "[riftchat] Service was active — restarting to pick up new code..."
+                systemctl --no-block restart 'riftchat.service' >/dev/null || true
             else
-                # Upgrade ($2 = previous version) → restart if it was running
-                echo "[riftchat] Upgrade from $2 — restarting service if running..."
-                if [ -x /usr/bin/deb-systemd-invoke ]; then
-                    deb-systemd-invoke try-restart 'riftchat.service' >/dev/null || true
-                else
-                    systemctl try-restart 'riftchat.service' >/dev/null || true
-                fi
+                echo "[riftchat] Service was not active — starting fresh..."
+                systemctl --no-block start 'riftchat.service' >/dev/null || true
             fi
         fi
 
