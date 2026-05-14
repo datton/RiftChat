@@ -1,7 +1,7 @@
 {
   "name": "riftchat",
-  "version": "0.1.5",
-  "description": "RiftChat — Reticulum messenger. Memory for the Mesh. (Rift-branded fork of Reticulum MeshChat by Liam Cottle, MIT.)",
+  "version": "0.1.7",
+  "description": "RiftChat — Reticulum messenger. Memory for the Mesh.",
   "main": "electron/main.js",
   "scripts": {
     "watch": "npm run build-frontend -- --watch",

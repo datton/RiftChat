@@ -3,7 +3,7 @@ from cx_Freeze import setup, Executable
 setup(
     name='RiftChat',
     version='0.1.0',
-    description='RiftChat - Reticulum mesh messenger. Memory for the Mesh. (Rift-branded fork of Reticulum MeshChat by Liam Cottle, MIT.)',
+    description='RiftChat - Reticulum mesh messenger. Memory for the Mesh.',
     executables=[
         Executable(
             script='meshchat.py', # entry point (filename retained from upstream; class is RiftChat-branded)

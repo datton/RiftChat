@@ -12,11 +12,11 @@ Description: RiftChat - Reticulum mesh messenger
  Messages travel over LoRa radio, BLE, WiFi-Direct, Ethernet, or the public
  internet - whichever Reticulum transports are available.
  .
- Wire-compatible with Sideband, NomadNet, and Reticulum MeshChat over LXMF.
+ Wire-compatible with Sideband, NomadNet, and other LXMF clients.
  Memory for the Mesh.
- .
- This package is a Rift-branded fork of Reticulum MeshChat by Liam Cottle (MIT).
- The fork carries upstream's MIT license intact; Rift additions are also MIT.
  .
  Installs on both amd64 and arm64 (Architecture: all) - Python wheels for
  native dependencies are resolved per-architecture at install time via pip.
+ .
+ MIT-licensed. Full attribution and upstream credit in
+ /usr/share/doc/riftchat/copyright.

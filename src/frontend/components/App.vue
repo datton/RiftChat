@@ -9,11 +9,7 @@
                 </div>
                 <div class="my-auto">
                     <div @click="onAppNameClick" class="font-bold cursor-pointer text-gray-900 dark:text-zinc-100">RiftChat</div>
-                    <div class="text-sm text-gray-700 dark:text-white">
-                        Built on
-                        <a target="_blank" href="https://github.com/liamcottle/reticulum-meshchat" class="text-blue-500 dark:text-blue-400">Reticulum MeshChat</a>
-                        by Liam Cottle (MIT)
-                    </div>
+                    <div class="text-sm text-gray-700 dark:text-white">Memory for the Mesh.</div>
                 </div>
                 <div class="flex my-auto ml-auto mr-0 sm:mr-2 space-x-1 sm:space-x-2">
                     <button @click="syncPropagationNode" type="button" class="rounded-full">

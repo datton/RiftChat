@@ -27,7 +27,7 @@ It carries messages, voice notes, and file attachments across whatever transport
 
 There is no central server. There is no account to create. There is no domain to own. Your identity is a cryptographic key on your device. Every message is encrypted end-to-end with Curve25519 + AES-256 and Perfect Forward Secrecy. The closest thing to a "server" is whichever peer on the mesh is online and willing to relay a packet — your laptop, a Raspberry Pi 200 km away, a friend's phone, a Citadel running in a rack in Frankfurt. Whichever is reachable, your message gets there.
 
-RiftChat speaks **LXMF** on the wire. That means it interoperates natively with [Sideband](https://github.com/markqvist/Sideband), [Nomad Network](https://github.com/markqvist/NomadNet), and upstream [Reticulum MeshChat](https://github.com/liamcottle/reticulum-meshchat) — three other clients on the same protocol. Your contacts can be on any of them. RiftChat itself is a Rift-branded fork of Reticulum MeshChat by Liam Cottle (MIT-licensed; see [Built on](#built-on) below).
+RiftChat speaks **LXMF** on the wire. That means it interoperates natively with [Sideband](https://github.com/markqvist/Sideband), [Nomad Network](https://github.com/markqvist/NomadNet), and other LXMF clients on the same protocol. Your contacts can be on any of them.
 
 ---
 

@@ -1,0 +1,322 @@
+#!/usr/bin/env bash
+# postinst — set up RiftChat after package files are unpacked.
+#
+# Called as: postinst configure [<previous-version>]
+# - No <previous-version> → fresh install
+# - With <previous-version> → upgrade from that version
+#
+# Responsibilities:
+#   1. Create the riftchat system user
+#   2. Create state dirs at /var/lib/riftchat/{,storage,reticulum}
+#   3. Set up the Python venv at /opt/riftchat/.venv and pip-install requirements
+#      (per-arch wheels are resolved here — works on amd64 and arm64)
+#   4. Seed a default Reticulum config so RiftChat works over the internet
+#      with no RNode, on first start (no manual UI setup needed)
+#   5. Use deb-systemd-helper to enable + start the service on fresh install,
+#      or restart it on upgrade if it was already running.
+set -e
+
+INSTALL_DIR="/opt/riftchat"
+VENV_DIR="${INSTALL_DIR}/.venv"
+RIFTCHAT_USER="riftchat"
+RIFTCHAT_HOME="/var/lib/riftchat"
+RNS_CONFIG_DIR="${RIFTCHAT_HOME}/reticulum"
+
+case "$1" in
+    configure)
+        # ---------------------------------------------------------------
+        # 1. Service user
+        # ---------------------------------------------------------------
+        if ! getent passwd "${RIFTCHAT_USER}" >/dev/null; then
+            echo "[riftchat] Creating service user..."
+            adduser --system --group --no-create-home \
+                --home "${RIFTCHAT_HOME}" \
+                --shell /usr/sbin/nologin \
+                "${RIFTCHAT_USER}"
+        fi
+
+        # ---------------------------------------------------------------
+        # 2. State directories
+        # ---------------------------------------------------------------
+        echo "[riftchat] Ensuring state directories..."
+        mkdir -p "${RIFTCHAT_HOME}/storage" "${RNS_CONFIG_DIR}"
+        chown -R "${RIFTCHAT_USER}:${RIFTCHAT_USER}" "${RIFTCHAT_HOME}"
+        chmod 750 "${RIFTCHAT_HOME}"
+
+        # ---------------------------------------------------------------
+        # 3. Python venv (per-arch wheels resolved by pip — amd64 + arm64)
+        # ---------------------------------------------------------------
+        # Recreate venv on fresh install. On upgrade, refresh pip + reinstall
+        # requirements in case requirements.txt changed.
+        if [ ! -x "${VENV_DIR}/bin/python" ]; then
+            echo "[riftchat] Creating Python venv at ${VENV_DIR}..."
+            python3 -m venv "${VENV_DIR}"
+        fi
+        echo "[riftchat] Installing/upgrading Python dependencies..."
+        "${VENV_DIR}/bin/pip" install --upgrade pip --quiet
+        "${VENV_DIR}/bin/pip" install -r "${INSTALL_DIR}/requirements.txt" --upgrade --quiet
+        chown -R "${RIFTCHAT_USER}:${RIFTCHAT_USER}" "${VENV_DIR}"
+
+        # ---------------------------------------------------------------
+        # 4. Default Reticulum config (only if none exists — never overwrite
+        #    a user's customized config on upgrade)
+        # ---------------------------------------------------------------
+        RNS_CONFIG_FILE="${RNS_CONFIG_DIR}/config"
+        if [ ! -f "${RNS_CONFIG_FILE}" ]; then
+            echo "[riftchat] Seeding default Reticulum config (Rift network, no RNode required)..."
+            cat > "${RNS_CONFIG_FILE}" << 'EOF'
+# RiftChat default Reticulum config.
+# This file is NOT overwritten by package upgrades — edit freely.
+# Reticulum manual: https://markqvist.github.io/Reticulum/manual/interfaces.html
+
+[reticulum]
+  enable_transport = no
+  share_instance = yes
+  # instance_name must match every other Rift component on this host so
+  # RNS share_instance finds the existing master and attaches instead of
+  # spawning a second instance that fights over AutoInterface ports.
+  instance_name = rift
+  shared_instance_port = 37428
+  instance_control_port = 37429
+  panic_on_interface_error = no
+
+[logging]
+  loglevel = 4
+
+[interfaces]
+
+  # LAN multicast — finds other Reticulum nodes on the same network
+  # automatically (Ethernet + WiFi). No internet required.
+  [[Default Interface]]
+    type = AutoInterface
+    enabled = yes
+
+  # ═══════════════════════════════════════════════════════════════════
+  # Rift core Citadels (primary — operated by the Rift project)
+  # ═══════════════════════════════════════════════════════════════════
+  # Reticulum opens all three in parallel — whichever responds first
+  # gets you onto the Rift mesh; the others provide redundancy and
+  # path diversity. Standard Reticulum TCP port is 4965.
+
+  [[Rift Citadel A]]
+    type = TCPClientInterface
+    enabled = yes
+    target_host = a.citadel.rift.pw
+    target_port = 4242
+
+  [[Rift Citadel B]]
+    type = TCPClientInterface
+    enabled = yes
+    target_host = b.citadel.rift.pw
+    target_port = 4242
+
+  [[Rift Connect Hub]]
+    type = TCPClientInterface
+    enabled = yes
+    target_host = connect.rift.pw
+    target_port = 4242
+
+  # ═══════════════════════════════════════════════════════════════════
+  # Public Reticulum community hubs (geographically diverse, default-on)
+  # ═══════════════════════════════════════════════════════════════════
+  # Sourced from the canonical reticulum.network/connect_jp.html node
+  # list plus the directory.rns.recipes / rmap.world community
+  # directories. Each is operated independently by community volunteers
+  # — their privacy/uptime policies are not under Rift's control.
+  #
+  # Reticulum tries all in parallel and silently retries failures, so
+  # listing many costs little. To disable any, change `enabled = yes`
+  # to `enabled = no` (or delete the block). Edits survive `apt upgrade`.
+
+  [[Amsterdam Community Hub]]
+    # Mark Qvist's hub. EU (Netherlands).
+    type = TCPClientInterface
+    enabled = yes
+    target_host = amsterdam.connect.reticulum.network
+    target_port = 4965
+
+  [[Sydney RNS]]
+    # APAC (Australia).
+    type = TCPClientInterface
+    enabled = yes
+    target_host = sydney.reticulum.au
+    target_port = 4242
+
+  [[BetweenTheBorders]]
+    # Community node.
+    type = TCPClientInterface
+    enabled = yes
+    target_host = reticulum.betweentheborders.com
+    target_port = 4242
+
+  [[dismail.de]]
+    # EU (Germany). Note non-standard port 7822.
+    type = TCPClientInterface
+    enabled = yes
+    target_host = rns.dismail.de
+    target_port = 7822
+
+  # ─── Additional community hubs (commented — enable for more paths) ──
+  # Uncomment any of these for additional redundancy. Recommended if
+  # you're in a region where the above hubs are unreachable, or you
+  # want extra path diversity.
+
+  # [[interloper]]
+  #   type = TCPClientInterface
+  #   enabled = yes
+  #   target_host = intr.cx
+  #   target_port = 4242
+  #
+  # [[noDNS1]]
+  #   # IP-only — useful when DNS resolution is blocked.
+  #   type = TCPClientInterface
+  #   enabled = yes
+  #   target_host = 202.61.243.41
+  #   target_port = 4965
+  #
+  # [[The Outpost]]
+  #   type = TCPClientInterface
+  #   enabled = yes
+  #   target_host = theoutpost.life
+  #   target_port = 4242
+  #
+  # [[Beleth RNS Hub]]
+  #   type = TCPClientInterface
+  #   enabled = yes
+  #   target_host = rns.beleth.net
+  #   target_port = 4242
+  #
+  # [[Rocket Tech Hub]]
+  #   # Port 443 — useful where 4242/4965/7822 are firewalled.
+  #   type = TCPClientInterface
+  #   enabled = yes
+  #   target_host = reticulum.rocket-tech.net
+  #   target_port = 443
+
+  # ─── Optional: your own Citadel ────────────────────────────────────
+  # [[My Citadel]]
+  #   type = TCPClientInterface
+  #   enabled = yes
+  #   target_host = citadel.example.com
+  #   target_port = 4965
+
+  # ─── LXMF Propagation Nodes ────────────────────────────────────────
+  # Propagation Nodes store-and-forward LXMF messages for offline
+  # recipients. RiftChat AUTO-DISCOVERS Propagation Nodes via Reticulum
+  # announces — when a Rift Citadel (a/b/connect.rift.pw) announces its
+  # Propagation Node service, this client will see it in
+  # Settings → LXMF Propagation Node and you can enable it from the UI.
+  # No config block needed here.
+
+  # ─── Optional: RNode (LoRa) when you plug one in via USB ───────────
+  # [[RNode LoRa]]
+  #   type = RNodeInterface
+  #   enabled = yes
+  #   port = /dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller-if00-port0
+  #   frequency = 867200000
+  #   bandwidth = 125000
+  #   txpower = 7
+  #   spreadingfactor = 8
+  #   codingrate = 5
+EOF
+            chown "${RIFTCHAT_USER}:${RIFTCHAT_USER}" "${RNS_CONFIG_FILE}"
+            chmod 640 "${RNS_CONFIG_FILE}"
+        else
+            echo "[riftchat] Preserving existing Reticulum config at ${RNS_CONFIG_FILE}"
+        fi
+
+        # ---------------------------------------------------------------
+        # 4b. Idempotent migration: ensure instance_name = rift is set so
+        # share_instance works with rnsd-agent + any other Rift component
+        # on the same host. Without this, two RNS processes each try to
+        # bind AutoInterface's multicast UDP port and the second loses
+        # (OSError: [Errno 98] Address already in use).
+        # ---------------------------------------------------------------
+        if [ -f "${RNS_CONFIG_FILE}" ]; then
+            if grep -qE '^\s*instance_name\s*=\s*rift-agent\b' "${RNS_CONFIG_FILE}"; then
+                echo "[riftchat] Migrating instance_name: rift-agent → rift"
+                sed -i 's/^\(\s*\)instance_name\s*=\s*rift-agent\s*$/\1instance_name = rift/' "${RNS_CONFIG_FILE}"
+            elif ! grep -qE '^\s*instance_name\s*=' "${RNS_CONFIG_FILE}"; then
+                echo "[riftchat] Adding missing instance_name = rift to shared-instance config"
+                sed -i '/^\[reticulum\]/a\  instance_name = rift' "${RNS_CONFIG_FILE}"
+            fi
+        fi
+
+        # ---------------------------------------------------------------
+        # 5. systemd lifecycle — enable + start on fresh install,
+        #    restart on upgrade if it was running.
+        # ---------------------------------------------------------------
+        # Standard Debian dh_installsystemd pattern using deb-systemd-helper
+        # (part of init-system-helpers, always available on Debian/Ubuntu).
+        if [ -x /usr/bin/deb-systemd-helper ]; then
+            echo "[riftchat] Registering systemd unit..."
+            deb-systemd-helper unmask 'riftchat.service' >/dev/null || true
+
+            if deb-systemd-helper --quiet was-enabled 'riftchat.service'; then
+                deb-systemd-helper enable 'riftchat.service' >/dev/null || true
+            else
+                deb-systemd-helper update-state 'riftchat.service' >/dev/null || true
+            fi
+        fi
+
+        if [ -d /run/systemd/system ]; then
+            systemctl --system daemon-reload >/dev/null || true
+
+            if [ -z "${2:-}" ]; then
+                # Fresh install (no previous version) → enable + start
+                echo "[riftchat] Fresh install — enabling + starting service..."
+                if [ -x /usr/bin/deb-systemd-helper ]; then
+                    deb-systemd-helper enable 'riftchat.service' >/dev/null || true
+                fi
+                if [ -x /usr/bin/deb-systemd-invoke ]; then
+                    deb-systemd-invoke start 'riftchat.service' >/dev/null || true
+                else
+                    systemctl start 'riftchat.service' >/dev/null || true
+                fi
+            else
+                # Upgrade ($2 = previous version) → restart if it was running
+                echo "[riftchat] Upgrade from $2 — restarting service if running..."
+                if [ -x /usr/bin/deb-systemd-invoke ]; then
+                    deb-systemd-invoke try-restart 'riftchat.service' >/dev/null || true
+                else
+                    systemctl try-restart 'riftchat.service' >/dev/null || true
+                fi
+            fi
+        fi
+
+        # ---------------------------------------------------------------
+        # 6. User-facing summary
+        # ---------------------------------------------------------------
+        STATUS="$(systemctl is-active riftchat 2>/dev/null || echo unknown)"
+        echo ""
+        echo "  ╔══════════════════════════════════════════════════════════╗"
+        echo "  ║  RiftChat installed.                                     ║"
+        printf "  ║  Service status: %-39s ║\n" "${STATUS}"
+        echo "  ║                                                          ║"
+        echo "  ║  Open UI:    http://localhost:8111  (or LAN IP:8111)     ║"
+        echo "  ║  Logs:       journalctl -u riftchat -f                   ║"
+        echo "  ║  Stop:       sudo systemctl stop riftchat                ║"
+        echo "  ║  Config:     /var/lib/riftchat/reticulum/config          ║"
+        echo "  ║                                                          ║"
+        echo "  ║  Internet:   3 Rift Citadels + 4 community hubs seeded   ║"
+        echo "  ║              (Amsterdam, Sydney, BTB, dismail.de)        ║"
+        echo "  ║              No RNode required. See config for more.     ║"
+        echo "  ║                                                          ║"
+        echo "  ║  Auto-update: disabled — opt in via                      ║"
+        echo "  ║              /etc/default/riftchat (set =true)           ║"
+        echo "  ║                                                          ║"
+        echo "  ║  Memory for the Mesh.                                    ║"
+        echo "  ╚══════════════════════════════════════════════════════════╝"
+        echo ""
+        ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+
+    *)
+        echo "postinst called with unknown argument: $1" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

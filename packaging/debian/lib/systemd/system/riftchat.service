@@ -2,6 +2,11 @@
 Description=RiftChat - Reticulum mesh messenger
 Documentation=https://rift.pw  https://github.com/datton/TheRift/tree/main/apps/riftchat
 After=network-online.target
+# Soft ordering: if rnsd-agent is also installed (Rift transport sidecar),
+# let it start first so it becomes the RNS share_instance master with
+# enable_transport=yes. RiftChat then attaches as a client. If rnsd-agent
+# isn't installed, this After= is a no-op and RiftChat boots immediately.
+After=rnsd-agent.service
 Wants=network-online.target
 
 [Service]
