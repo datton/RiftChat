@@ -112,6 +112,8 @@ class ReticulumMeshChat:
 
         # init reticulum
         self.reticulum = RNS.Reticulum(reticulum_config_dir)
+        if hasattr(self.reticulum, "config") and hasattr(self.reticulum.config, "encoding"):
+            self.reticulum.config.encoding = "utf-8"
         self.identity = identity
 
         # init lxmf router
@@ -3637,6 +3639,11 @@ def main():
 
     # use provided identity, or fallback to a random one
     if args.identity_file is not None:
+        if not os.path.exists(args.identity_file):
+            identity = RNS.Identity(create_keys=True)
+            with open(args.identity_file, "wb") as file:
+                file.write(identity.get_private_key())
+            print("Reticulum Identity <{}> has been randomly generated and saved to {}.".format(identity.hash.hex(), args.identity_file))
         identity = RNS.Identity(create_keys=False)
         identity.load(args.identity_file)
         print("Reticulum Identity <{}> has been loaded from file {}.".format(identity.hash.hex(), args.identity_file))
