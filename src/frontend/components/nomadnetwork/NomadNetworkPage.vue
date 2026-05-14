@@ -117,14 +117,18 @@
         </div>
 
         <!-- file download bottom bar -->
-        <div v-if="isDownloadingNodeFile" class="flex w-full border-gray-300 dark:border-zinc-800 border-t p-2 dark:text-gray-100">
-            <div class="my-auto mr-2">
-                <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <div v-if="isDownloadingNodeFile" class="relative w-full bg-gray-50 dark:bg-zinc-900 border-t border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-50">
+            <div class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
+                <svg class="animate-spin h-4 w-4 text-cyan-600 dark:text-cyan-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
+                <span class="truncate flex-1">Downloading <span class="font-mono">{{ nodeFilePath }}</span></span>
+                <span class="font-mono tabular-nums text-cyan-700 dark:text-cyan-300 shrink-0">{{ nodeFileProgress }}%</span>
             </div>
-            <div class="my-auto">Downloading: {{ nodeFilePath }} ({{ nodeFileProgress }}%)</div>
+            <div class="h-1 w-full bg-gray-200 dark:bg-zinc-800">
+                <div class="h-full bg-cyan-500 dark:bg-cyan-400 transition-all duration-150" :style="{ width: nodeFileProgress + '%' }"></div>
+            </div>
         </div>
     </div>
 
