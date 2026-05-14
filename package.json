@@ -1,6 +1,6 @@
 {
   "name": "riftchat",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "description": "RiftChat — Reticulum messenger. Memory for the Mesh.",
   "main": "electron/main.js",
   "scripts": {

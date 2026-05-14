@@ -36,6 +36,27 @@ case "$1" in
         fi
 
         # ---------------------------------------------------------------
+        # 1b. Shared RNS RPC auth token (per-host random)
+        # ---------------------------------------------------------------
+        # Every Rift component on this host shares /etc/rift/rpc.key so
+        # they can all use RNS share_instance. RiftChat may be installed
+        # alone (without rift-shared, rift-agent-connect, etc.) so we
+        # idempotently create the group + key if they don't already exist
+        # — first Rift package on a host wins; subsequent ones reuse.
+        getent group rift-rpc >/dev/null 2>&1 || groupadd --system rift-rpc
+        usermod -aG rift-rpc "${RIFTCHAT_USER}" 2>/dev/null || true
+
+        mkdir -p /etc/rift
+        chown root:root /etc/rift
+        chmod 0755 /etc/rift
+        if [ ! -f /etc/rift/rpc.key ]; then
+            echo "[riftchat] Generating per-host RNS RPC key at /etc/rift/rpc.key"
+            head -c 32 /dev/urandom | xxd -p -c 64 > /etc/rift/rpc.key
+        fi
+        chown root:rift-rpc /etc/rift/rpc.key
+        chmod 0640 /etc/rift/rpc.key
+
+        # ---------------------------------------------------------------
         # 2. State directories
         # ---------------------------------------------------------------
         echo "[riftchat] Ensuring state directories..."
@@ -76,6 +97,9 @@ case "$1" in
   # RNS share_instance finds the existing master and attaches instead of
   # spawning a second instance that fights over AutoInterface ports.
   instance_name = rift
+  # rpc_key is inserted below by postinst from /etc/rift/rpc.key (per-host
+  # random 32 bytes — shared between Rift components on this host, unique
+  # across hosts).
   shared_instance_port = 37428
   instance_control_port = 37429
   panic_on_interface_error = no
@@ -226,19 +250,26 @@ EOF
         fi
 
         # ---------------------------------------------------------------
-        # 4b. Idempotent migration: ensure instance_name = rift is set so
-        # share_instance works with rnsd-agent + any other Rift component
-        # on the same host. Without this, two RNS processes each try to
-        # bind AutoInterface's multicast UDP port and the second loses
-        # (OSError: [Errno 98] Address already in use).
+        # 4b. Idempotent migration: ensure instance_name = rift AND the
+        # per-host rpc_key (from /etc/rift/rpc.key) are applied. Drops
+        # any legacy hardcoded rpc_key from earlier releases so every
+        # install moves to a per-host random value.
         # ---------------------------------------------------------------
+        RIFT_RPC_KEY=$(tr -d '[:space:]' < /etc/rift/rpc.key 2>/dev/null || true)
         if [ -f "${RNS_CONFIG_FILE}" ]; then
             if grep -qE '^\s*instance_name\s*=\s*rift-agent\b' "${RNS_CONFIG_FILE}"; then
                 echo "[riftchat] Migrating instance_name: rift-agent → rift"
                 sed -i 's/^\(\s*\)instance_name\s*=\s*rift-agent\s*$/\1instance_name = rift/' "${RNS_CONFIG_FILE}"
             elif ! grep -qE '^\s*instance_name\s*=' "${RNS_CONFIG_FILE}"; then
-                echo "[riftchat] Adding missing instance_name = rift to shared-instance config"
+                echo "[riftchat] Adding missing instance_name = rift"
                 sed -i '/^\[reticulum\]/a\  instance_name = rift' "${RNS_CONFIG_FILE}"
+            fi
+            if [ -n "$RIFT_RPC_KEY" ]; then
+                # Drop any existing rpc_key line (legacy hardcoded or
+                # previous per-host random) and apply current value.
+                sed -i '/^\s*rpc_key\s*=/d' "${RNS_CONFIG_FILE}"
+                sed -i "/^\s*instance_name\s*=\s*rift\s*$/a\\  rpc_key = $RIFT_RPC_KEY" "${RNS_CONFIG_FILE}"
+                echo "[riftchat] Applied per-host rpc_key from /etc/rift/rpc.key"
             fi
         fi
 
