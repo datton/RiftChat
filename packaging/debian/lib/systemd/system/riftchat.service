@@ -14,10 +14,12 @@ Type=simple
 User=riftchat
 Group=riftchat
 WorkingDirectory=/opt/riftchat
-Environment="PATH=/opt/riftchat/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="PATH=/usr/lib/rift/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 Environment="PYTHONIOENCODING=utf-8"
 Environment="LANG=C.UTF-8"
-ExecStart=/opt/riftchat/.venv/bin/python /opt/riftchat/meshchat.py \
+# Runs out of the shared /usr/lib/rift/venv owned by rift-shared (one rns,
+# one lxmf, one set of crypto deps across every Rift app on this host).
+ExecStart=/usr/lib/rift/venv/bin/python /opt/riftchat/meshchat.py \
     --host 0.0.0.0 \
     --port 8111 \
     --headless \

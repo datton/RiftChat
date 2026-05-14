@@ -65,18 +65,21 @@ case "$1" in
         chmod 750 "${RIFTCHAT_HOME}"
 
         # ---------------------------------------------------------------
-        # 3. Python venv (per-arch wheels resolved by pip — amd64 + arm64)
+        # 3. Python deps come from /usr/lib/rift/venv (owned by rift-shared
+        #    >= 0.2.0 — declared in this package's Depends). Migration: if
+        #    a legacy /opt/riftchat/.venv exists from an older install,
+        #    remove it (saves ~150 MB and ensures the systemd unit uses
+        #    the shared venv instead of the orphaned one).
         # ---------------------------------------------------------------
-        # Recreate venv on fresh install. On upgrade, refresh pip + reinstall
-        # requirements in case requirements.txt changed.
-        if [ ! -x "${VENV_DIR}/bin/python" ]; then
-            echo "[riftchat] Creating Python venv at ${VENV_DIR}..."
-            python3 -m venv "${VENV_DIR}"
+        if [ ! -x /usr/lib/rift/venv/bin/python ]; then
+            echo "FATAL: /usr/lib/rift/venv/bin/python missing — rift-shared >= 0.2.0 not installed." >&2
+            echo "       This package depends on rift-shared; check the apt log." >&2
+            exit 1
         fi
-        echo "[riftchat] Installing/upgrading Python dependencies..."
-        "${VENV_DIR}/bin/pip" install --upgrade pip --quiet
-        "${VENV_DIR}/bin/pip" install -r "${INSTALL_DIR}/requirements.txt" --upgrade --quiet
-        chown -R "${RIFTCHAT_USER}:${RIFTCHAT_USER}" "${VENV_DIR}"
+        if [ -d "${VENV_DIR}" ]; then
+            echo "[riftchat] Removing legacy /opt/riftchat/.venv (consolidated onto rift-shared)..."
+            rm -rf "${VENV_DIR}"
+        fi
 
         # ---------------------------------------------------------------
         # 4. Default Reticulum config (only if none exists — never overwrite
