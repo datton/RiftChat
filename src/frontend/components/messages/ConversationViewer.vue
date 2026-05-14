@@ -89,7 +89,7 @@
                 <div v-for="chatItem of selectedPeerChatItemsReversed" :key="chatItem.lxmf_message.hash" class="flex flex-col max-w-xl mt-3" :class="{ 'ml-auto pl-4 md:pl-16 items-end': chatItem.is_outbound, 'mr-auto pr-4 md:pr-16 items-start': !chatItem.is_outbound }">
 
                     <!-- message content -->
-                    <div @click="onChatItemClick(chatItem)" class="border border-gray-300 dark:border-zinc-800 rounded-xl shadow overflow-hidden" :class="[ ['cancelled', 'failed'].includes(chatItem.lxmf_message.state) ? 'bg-red-500 text-white' : chatItem.is_outbound ? 'bg-[#3b82f6] text-white' : 'bg-[#efefef]' ]">
+                    <div @click="onChatItemClick(chatItem)" class="border border-gray-300 dark:border-zinc-800 rounded-xl shadow overflow-hidden" :class="[ ['cancelled', 'failed'].includes(chatItem.lxmf_message.state) ? 'bg-red-500 text-white' : chatItem.is_outbound ? 'bg-[#3b82f6] text-white' : 'bg-[#efefef] text-gray-900 dark:bg-zinc-800 dark:text-zinc-100' ]">
 
                         <div class="w-full space-y-0.5 px-2.5 py-1">
 
@@ -151,7 +151,7 @@
                         </div>
 
                         <!-- actions -->
-                        <div v-if="chatItem.is_actions_expanded" class="border-t p-1 bg-[#efefef] text-white">
+                        <div v-if="chatItem.is_actions_expanded" class="border-t border-gray-300 dark:border-zinc-700 p-1 bg-[#efefef] text-gray-700 dark:bg-zinc-800 dark:text-zinc-300">
 
                             <!-- delete message -->
                             <button @click.stop="deleteChatItem(chatItem)" type="button" class="inline-flex items-center gap-x-1 rounded-md bg-red-500 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
