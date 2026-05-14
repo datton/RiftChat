@@ -40,7 +40,7 @@ curl -fsSL https://apt.rift.pw/install/riftchat | sudo bash
 sudo systemctl enable --now riftchat
 ```
 
-Open `http://localhost:8000` from any browser on the same network.
+Open `http://localhost:8111` from any browser on the same network.
 
 A single `Architecture: all` `.deb` works on both **amd64** (x86_64) and **arm64** (Pi 4/5, Apple Silicon Linux VMs, AWS Graviton). Native Python wheels for `aiohttp` / `cryptography` / `peewee` resolve per-architecture at install time.
 
@@ -57,10 +57,10 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 npm install && npm run build-frontend     # compiles Vue + Tailwind into public/
-python meshchat.py --host 0.0.0.0 --port 8000 --headless
+python meshchat.py --host 0.0.0.0 --port 8111 --headless
 ```
 
-UI at `http://localhost:8000`.
+UI at `http://localhost:8111`.
 
 ### Docker
 
@@ -82,7 +82,7 @@ Uses the upstream `Dockerfile` and `docker-compose.yml` — Rift branding still 
 | **Files, images, attachments** | Inline previews, downloadable from either side. |
 | **LXMF Propagation Nodes** | Messages addressed to you while offline arrive on next connection — discovered automatically via Reticulum announces. |
 | **Multi-transport routing** | Reticulum opens all configured interfaces in parallel; whichever has reachability wins. LoRa, BLE, WiFi Direct, Ethernet, packet radio, plain TCP — same routing layer. |
-| **systemd readiness probe** | `systemctl start riftchat` only reports `active` once the UI actually answers on port 8000. |
+| **systemd readiness probe** | `systemctl start riftchat` only reports `active` once the UI actually answers on port 8111. |
 | **Operator-friendly** | Weekly opt-in auto-upgrades, dialout group for RNode USB, security-hardened systemd unit, journal-aware logging. |
 
 ---

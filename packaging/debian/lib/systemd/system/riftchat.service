@@ -14,16 +14,16 @@ Environment="PYTHONIOENCODING=utf-8"
 Environment="LANG=C.UTF-8"
 ExecStart=/opt/riftchat/.venv/bin/python /opt/riftchat/meshchat.py \
     --host 0.0.0.0 \
-    --port 8000 \
+    --port 8111 \
     --headless \
     --identity-file /var/lib/riftchat/identity \
     --storage-dir /var/lib/riftchat/storage \
     --reticulum-config-dir /var/lib/riftchat/reticulum
 
 # Readiness probe — systemd considers the unit "active" only once the UI
-# answers on :8000. Retries for up to 30s with 1s intervals. Failure here
+# answers on :8111. Retries for up to 30s with 1s intervals. Failure here
 # triggers the Restart=on-failure policy below.
-ExecStartPost=/bin/bash -c 'for i in $(seq 1 30); do curl -fsS -o /dev/null --max-time 2 http://127.0.0.1:8000/ && exit 0; sleep 1; done; echo "[riftchat] UI did not become reachable on :8000 within 30s" >&2; exit 1'
+ExecStartPost=/bin/bash -c 'for i in $(seq 1 30); do curl -fsS -o /dev/null --max-time 2 http://127.0.0.1:8111/ && exit 0; sleep 1; done; echo "[riftchat] UI did not become reachable on :8111 within 30s" >&2; exit 1'
 TimeoutStartSec=60
 
 # Restart policy

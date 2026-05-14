@@ -26,6 +26,6 @@ Ensure the `cx_freeze` line is updated to `#cx_freeze`
 
 > Note: Building wheel for cryptography may take a while on Android.
 
-Once MeshChat is running via Termux, open your favourite Android web browser, and navigate to http://localhost:8000
+Once MeshChat is running via Termux, open your favourite Android web browser, and navigate to http://localhost:8111
 
 > Note: The default `AutoInterface` may not work on your Android device. You will need to configure another interface such as `TCPClientInterface`.

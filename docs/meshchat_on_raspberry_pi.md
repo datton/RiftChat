@@ -89,4 +89,4 @@ sudo systemctl status reticulum-meshchat.service
 
 You should now be able to access MeshChat via your Pi's IP address.
 
-> Note: Don't forget to include the default port `8000`
+> Note: Don't forget to include the default port `8111`

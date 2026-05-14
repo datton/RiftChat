@@ -7,9 +7,9 @@ services:
     image: ghcr.io/liamcottle/reticulum-meshchat:latest
     pull_policy: always
     restart: unless-stopped
-    # Make the RiftChat web interface accessible from the host on port 8000
+    # Make the RiftChat web interface accessible from the host on port 8111
     ports:
-      - 0.0.0.0:8000:8000
+      - 0.0.0.0:8111:8111
     volumes:
       - riftchat-config:/config
     # Uncomment if you have a USB device connected, such as an RNode

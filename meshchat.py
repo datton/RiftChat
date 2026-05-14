@@ -3599,7 +3599,7 @@ def main():
     # parse command line args
     parser = argparse.ArgumentParser(description="RiftChat — Reticulum messenger (Rift-branded fork of Reticulum MeshChat by Liam Cottle, MIT)")
     parser.add_argument("--host", nargs='?', default="127.0.0.1", type=str, help="The address the web server should listen on.")
-    parser.add_argument("--port", nargs='?', default="8000", type=int, help="The port the web server should listen on.")
+    parser.add_argument("--port", nargs='?', default="8111", type=int, help="The port the web server should listen on.")
     parser.add_argument("--headless", action='store_true', help="Web browser will not automatically launch when this flag is passed.")
     parser.add_argument("--identity-file", type=str, help="Path to a Reticulum Identity file to use as your LXMF address.")
     parser.add_argument("--identity-base64", type=str, help="A base64 encoded Reticulum Identity to use as your LXMF address.")
